@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rasoi Rider Food Delivery</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts - Inter for a modern look -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- React & ReactDOM CDNs -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <!-- Babel CDN - for transpiling JSX in the browser -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    /* Custom CSS to ensure Inter font and full page background/height */
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8fafc; /* Light gray background */
+      line-height: 1.6;
+    }
+    #root {
+      min-height: 100vh; /* Ensure the app takes full viewport height */
+      display: flex;
+      flex-direction: column;
+    }
+    /* Simple scrollbar styling for better aesthetics (optional) */
+    ::-webkit-scrollbar {
+        width: 10px;
+    }
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- Your React App Code with type="text/babel" -->
+  <script type="text/babel">
+    // Context for managing application-wide state like cart and user
+    const AppContext = React.createContext();
+
+    // Mock Data - In a real MERN app, this would come from a database via API
+    const mockRestaurants = [
+      {
+        id: 'res1',
+        name: 'Spicy Delight',
+        cuisine: 'Indian',
+        rating: 4.5,
+        imageUrl: 'https://placehold.co/400x300/FEE2E2/EF4444?text=Spicy+Delight',
+        menu: [
+          { id: 'dish1', name: 'Butter Chicken', price: 250, description: 'Creamy chicken curry with rich tomato gravy.' },
+          { id: 'dish2', name: 'Naan Bread', price: 50, description: 'Soft, fluffy, oven-baked flatbread.' },
+          { id: 'dish3', name: 'Vegetable Biryani', price: 200, description: 'Fragrant basmati rice cooked with mixed vegetables and spices.' },
+          { id: 'dish10', name: 'Chicken Tikka Masala', price: 280, description: 'Succulent chicken pieces in a spicy, creamy sauce.' },
+          { id: 'dish11', name: 'Paneer Butter Masala', price: 230, description: 'Soft paneer cubes in a rich, buttery tomato gravy.' },
+        ],
+      },
+      {
+        id: 'res2',
+        name: 'Pizza Palace',
+        cuisine: 'Italian',
+        rating: 4.2,
+        imageUrl: 'https://placehold.co/400x300/DBEAFE/3B82F6?text=Pizza+Palace',
+        menu: [
+          { id: 'dish4', name: 'Pepperoni Pizza', price: 350, description: 'Classic pizza topped with generous pepperoni slices.' },
+          { id: 'dish5', name: 'Margherita Pizza', price: 300, description: 'Simple and delicious with fresh mozzarella and basil.' },
+          { id: 'dish6', name: 'Garlic Bread', price: 100, description: 'Toasted bread with aromatic garlic and herbs.' },
+          { id: 'dish12', name: 'Veggie Supreme Pizza', price: 320, description: 'Loaded with fresh bell peppers, onions, olives, and mushrooms.' },
+          { id: 'dish13', name: 'Chicken Alfredo Pasta', price: 280, description: 'Creamy fettuccine Alfredo with grilled chicken.' },
+        ],
+      },
+      {
+        id: 'res3',
+        name: 'Sushi Hub',
+        cuisine: 'Japanese',
+        rating: 4.8,
+        imageUrl: 'https://placehold.co/400x300/D1FAE5/10B981?text=Sushi+Hub',
+        menu: [
+          { id: 'dish7', name: 'Salmon Nigiri', price: 180, description: 'Fresh salmon on perfectly seasoned sushi rice.' },
+          { id: 'dish8', name: 'California Roll', price: 220, description: 'Popular sushi roll with crab stick, avocado, and cucumber.' },
+          { id: 'dish9', name: 'Miso Soup', price: 80, description: 'Traditional Japanese soup with tofu, seaweed, and scallions.' },
+          { id: 'dish14', name: 'Tuna Sashimi', price: 250, description: 'Thinly sliced raw tuna, served with soy sauce and wasabi.' },
+          { id: 'dish15', name: 'Chicken Teriyaki', price: 300, description: 'Grilled chicken glazed with sweet and savory teriyaki sauce.' },
+        ],
+      },
+      {
+        id: 'res4',
+        name: 'Burger Joint',
+        cuisine: 'American',
+        rating: 4.3,
+        imageUrl: 'https://placehold.co/400x300/FCE7F3/EC4899?text=Burger+Joint',
+        menu: [
+          { id: 'dish16', name: 'Classic Cheeseburger', price: 200, description: 'Beef patty with melted cheese, lettuce, and tomato.' },
+          { id: 'dish17', name: 'Crispy Chicken Burger', price: 180, description: 'Golden fried chicken patty with coleslaw and special sauce.' },
+          { id: 'dish18', name: 'French Fries', price: 90, description: 'Perfectly salted crispy golden fries.' },
+        ],
+      },
+      {
+        id: 'res5',
+        name: 'Green Leaf Cafe',
+        cuisine: 'Healthy',
+        rating: 4.6,
+        imageUrl: 'https://placehold.co/400x300/ECFDF5/059669?text=Green+Leaf+Cafe',
+        menu: [
+          { id: 'dish19', name: 'Quinoa Salad', price: 220, description: 'Fresh salad with quinoa, mixed greens, and a citrus dressing.' },
+          { id: 'dish20', name: 'Avocado Toast', price: 150, description: 'Toasted sourdough with mashed avocado and chili flakes.' },
+          { id: 'dish21', name: 'Smoothie Bowl', price: 180, description: 'Blended fruits topped with granola and fresh berries.' },
+        ],
+      },
+    ];
+
+    // Mock API functions - simulate backend calls
+    const mockApi = {
+      // Simulates fetching all restaurants
+      fetchRestaurants: () => {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve({ success: true, data: mockRestaurants });
+          }, 700); // Simulate network delay
+        });
+      },
+
+      // Simulates fetching menu for a specific restaurant
+      fetchMenuByRestaurantId: (restaurantId) => {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            const restaurant = mockRestaurants.find((r) => r.id === restaurantId);
+            if (restaurant) {
+              resolve({ success: true, data: restaurant.menu });
+            } else {
+              reject({ success: false, message: 'Restaurant not found' });
+            }
+          }, 700);
+        });
+      },
+
+      // Simulates user login
+      login: (username, password) => {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            // Simple mock login: any non-empty username/password is "successful"
+            if (username && password) {
+              resolve({ success: true, user: { id: 'user123', name: username } });
+            } else {
+              reject({ success: false, message: 'Invalid credentials. Please try again.' });
+            }
+          }, 600);
+        });
+      },
+
+      // Simulates user signup
+      signup: (username, password) => {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            // Simple mock signup: always successful for demonstration
+            if (username && password) {
+              resolve({ success: true, user: { id: 'user' + Date.now(), name: username } });
+            } else {
+              reject({ success: false, message: 'Please provide a valid username and password.' });
+            }
+          }, 800);
+        });
+      },
+
+      // Simulates placing an order
+      placeOrder: (orderData) => {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            console.log('Order placed (simulated):', orderData);
+            resolve({ success: true, message: 'Order placed successfully! Enjoy your meal!' });
+          }, 1200);
+        });
+      },
+    };
+
+    // Reusable Button Component with enhanced styling
+    const Button = ({ children, onClick, className = '', type = 'button', disabled = false }) => (
+      <button
+        type={type}
+        onClick={onClick}
+        disabled={disabled}
+        className={`
+          px-6 py-3 rounded-full font-bold text-lg
+          transition-all duration-300 ease-in-out
+          transform hover:scale-105 active:scale-95
+          shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-opacity-75
+          ${disabled ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-red-500 to-orange-500 text-white hover:from-red-600 hover:to-orange-600 focus:ring-red-500'}
+          ${className}
+        `}
+      >
+        {children}
+      </button>
+    );
+
+    // Icon Components (using inline SVG for simplicity)
+    const HomeIcon = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    );
+
+    const ShoppingCartIcon = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+    );
+
+    const UserIcon = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    );
+
+    const LogOutIcon = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="17 16 22 12 17 8"/><line x1="22" x2="11" y1="12" y2="12"/></svg>
+    );
+
+    const StarIcon = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    );
+
+    // Navbar Component with updated aesthetics
+    const Navbar = ({ navigate }) => {
+      const { cart, user, setUser } = React.useContext(AppContext);
+      const totalCartItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+      const handleLogout = () => {
+        setUser(null);
+        navigate('home');
+      };
+
+      return (
+        <nav className="bg-gradient-to-r from-red-600 to-rose-600 p-4 shadow-xl sticky top-0 z-50 rounded-b-3xl">
+          <div className="container mx-auto flex justify-between items-center px-4">
+            <h1 className="text-white text-4xl font-extrabold tracking-wider drop-shadow-lg cursor-pointer" onClick={() => navigate('home')}>
+              Rasoi Rider
+            </h1>
+            <div className="flex space-x-4 sm:space-x-6">
+              <button onClick={() => navigate('home')} className="text-white hover:text-red-200 transition duration-300 flex items-center space-x-1 p-2 rounded-lg hover:bg-white hover:bg-opacity-20">
+                <HomeIcon /> <span className="hidden md:inline font-semibold">Home</span>
+              </button>
+              <button onClick={() => navigate('cart')} className="text-white hover:text-red-200 transition duration-300 flex items-center space-x-1 p-2 rounded-lg hover:bg-white hover:bg-opacity-20 relative">
+                <ShoppingCartIcon />
+                {totalCartItems > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-yellow-300 text-red-800 rounded-full text-xs w-5 h-5 flex items-center justify-center font-extrabold shadow-sm">
+                    {totalCartItems}
+                  </span>
+                )}
+                <span className="hidden md:inline font-semibold">Cart</span>
+              </button>
+              {user ? (
+                <>
+                  <span className="text-white flex items-center space-x-1 p-2 rounded-lg bg-white bg-opacity-10">
+                    <UserIcon /> <span className="hidden md:inline font-semibold">Hello, {user.name.split(' ')[0]}</span>
+                  </span>
+                  <button onClick={handleLogout} className="text-white hover:text-red-200 transition duration-300 flex items-center space-x-1 p-2 rounded-lg hover:bg-white hover:bg-opacity-20">
+                    <LogOutIcon /> <span className="hidden md:inline font-semibold">Logout</span>
+                  </button>
+                </>
+              ) : (
+                <button onClick={() => navigate('auth')} className="text-white hover:text-red-200 transition duration-300 flex items-center space-x-1 p-2 rounded-lg hover:bg-white hover:bg-opacity-20">
+                  <UserIcon /> <span className="hidden md:inline font-semibold">Login/Signup</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </nav>
+      );
+    };
+
+    // Restaurant Card Component with improved visuals
+    const RestaurantCard = ({ restaurant, navigate }) => (
+      <div
+        className="bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden transform hover:-translate-y-2 border border-gray-100 group"
+        onClick={() => navigate('restaurant', { restaurantId: restaurant.id })}
+      >
+        <div className="relative overflow-hidden rounded-t-3xl">
+          <img
+            src={restaurant.imageUrl}
+            alt={restaurant.name}
+            className="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-500 rounded-t-3xl"
+            onError={(e) => e.target.src = 'https://placehold.co/400x300/FEE2E2/EF4444?text=Image+Unavailable'}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-40 rounded-t-3xl"></div>
+          <div className="absolute bottom-4 left-4 right-4 text-white font-bold text-2xl drop-shadow-md">
+            {restaurant.name}
+          </div>
+        </div>
+        <div className="p-6">
+          <h3 className="font-extrabold text-xl text-gray-800 mb-2">{restaurant.name}</h3>
+          <p className="text-gray-600 text-sm mb-3">{restaurant.cuisine}</p>
+          <div className="flex items-center text-yellow-500 text-base font-semibold">
+            <StarIcon />
+            <span>{restaurant.rating}</span>
+          </div>
+        </div>
+      </div>
+    );
+
+    // Loading Skeleton for Restaurant Cards
+    const RestaurantCardSkeleton = () => (
+      <div className="bg-white rounded-3xl shadow-xl overflow-hidden animate-pulse border border-gray-100">
+        <div className="w-full h-56 bg-gray-200 rounded-t-3xl"></div>
+        <div className="p-6">
+          <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 mb-3"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+        </div>
+      </div>
+    );
+
+    // Menu Item Card Component with improved visuals
+    const MenuItemCard = ({ item, addToCart }) => (
+      <div className="bg-white rounded-2xl shadow-lg p-5 flex flex-col justify-between items-center text-center space-y-3 transform hover:scale-[1.03] transition-all duration-300 border border-gray-100">
+        <h4 className="font-extrabold text-gray-800 text-xl">{item.name}</h4>
+        <p className="text-gray-600 text-sm flex-grow">{item.description}</p>
+        <p className="text-green-600 font-extrabold text-2xl">₹{item.price}</p>
+        <Button onClick={() => addToCart(item)} className="w-full mt-auto bg-green-500 hover:bg-green-600">
+          Add to Cart
+        </Button>
+      </div>
+    );
+
+    // Loading Skeleton for Menu Item Cards
+    const MenuItemCardSkeleton = () => (
+      <div className="bg-white rounded-2xl shadow-lg p-5 flex flex-col justify-between items-center text-center space-y-3 animate-pulse border border-gray-100">
+        <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+        <div className="h-4 bg-gray-200 rounded w-full flex-grow mb-2"></div>
+        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+        <div className="h-10 bg-gray-200 rounded-full w-full"></div>
+      </div>
+    );
+
+    // Home Page Component
+    const HomePage = ({ navigate }) => {
+      const [restaurants, setRestaurants] = React.useState([]);
+      const [loading, setLoading] = React.useState(true);
+      const [error, setError] = React.useState(null);
+
+      React.useEffect(() => {
+        const loadRestaurants = async () => {
+          try {
+            const response = await mockApi.fetchRestaurants();
+            if (response.success) {
+              setRestaurants(response.data);
+            } else {
+              setError(response.message);
+            }
+          } catch (err) {
+            setError('Failed to load restaurants. Please try again.');
+            console.error("Fetch restaurants error:", err);
+          } finally {
+            setLoading(false);
+          }
+        };
+        loadRestaurants();
+      }, []);
+
+      return (
+        <div className="container mx-auto p-6 lg:p-10">
+          <h2 className="text-5xl font-extrabold text-gray-800 mb-10 text-center bg-clip-text text-transparent bg-gradient-to-r from-red-600 to-orange-400 drop-shadow-md">
+            Taste the Best Near You!
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 xl:gap-10">
+            {loading ? (
+              Array.from({ length: 6 }).map((_, i) => <RestaurantCardSkeleton key={i} />)
+            ) : error ? (
+              <div className="col-span-full text-center p-12 text-red-600 bg-red-50 rounded-xl shadow-md border border-red-200">
+                <p className="text-xl font-semibold mb-2">Oops! Something went wrong.</p>
+                <p>{error}</p>
+              </div>
+            ) : restaurants.length === 0 ? (
+              <div className="col-span-full text-center p-12 text-gray-600 bg-gray-50 rounded-xl shadow-md border border-gray-200">
+                <p className="text-xl font-semibold mb-2">No restaurants found at the moment.</p>
+                <p>Please check back later!</p>
+              </div>
+            ) : (
+              restaurants.map((restaurant) => (
+                <RestaurantCard key={restaurant.id} restaurant={restaurant} navigate={navigate} />
+              ))
+            )}
+          </div>
+        </div>
+      );
+    };
+
+    // Restaurant Detail/Menu Page Component
+    const RestaurantDetailPage = ({ restaurantId, navigate }) => {
+      const { addToCart } = React.useContext(AppContext);
+      const [restaurant, setRestaurant] = React.useState(null);
+      const [menu, setMenu] = React.useState([]);
+      const [loading, setLoading] = React.useState(true);
+      const [error, setError] = React.useState(null);
+
+      React.useEffect(() => {
+        const loadRestaurantAndMenu = async () => {
+          try {
+            const foundRestaurant = mockRestaurants.find((r) => r.id === restaurantId);
+            if (!foundRestaurant) {
+              setError('Restaurant not found. Please go back.');
+              setLoading(false);
+              return;
+            }
+            setRestaurant(foundRestaurant);
+
+            const response = await mockApi.fetchMenuByRestaurantId(restaurantId);
+            if (response.success) {
+              setMenu(response.data);
+            } else {
+              setError(response.message);
+            }
+          } catch (err) {
+            setError('Failed to load menu. Please try refreshing.');
+            console.error("Fetch menu error:", err);
+          } finally {
+            setLoading(false);
+          }
+        };
+        loadRestaurantAndMenu();
+      }, [restaurantId]);
+
+      if (loading) {
+        return (
+          <div className="container mx-auto p-6 lg:p-10">
+            <div className="animate-pulse bg-white rounded-3xl shadow-xl p-8 mb-8">
+              <div className="h-10 bg-gray-200 rounded w-1/2 mb-4"></div>
+              <div className="h-6 bg-gray-200 rounded w-1/3 mb-6"></div>
+              <div className="w-full h-64 bg-gray-200 rounded-2xl mb-6"></div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {Array.from({ length: 8 }).map((_, i) => <MenuItemCardSkeleton key={i} />)}
+            </div>
+          </div>
+        );
+      }
+
+      if (error) {
+        return (
+          <div className="container mx-auto p-6 lg:p-10">
+            <Button onClick={() => navigate('home')} className="bg-gray-200 text-gray-800 hover:bg-gray-300 mb-8 py-2 px-5 text-base">
+              &larr; Back to Restaurants
+            </Button>
+            <div className="text-center p-12 text-red-600 bg-red-50 rounded-xl shadow-md border border-red-200">
+              <p className="text-xl font-semibold mb-2">Error loading restaurant details!</p>
+              <p>{error}</p>
+            </div>
+          </div>
+        );
+      }
+
+      if (!restaurant) {
+        return (
+          <div className="container mx-auto p-6 lg:p-10">
+            <Button onClick={() => navigate('home')} className="bg-gray-200 text-gray-800 hover:bg-gray-300 mb-8 py-2 px-5 text-base">
+              &larr; Back to Restaurants
+            </Button>
+            <div className="text-center p-12 text-red-600 bg-red-50 rounded-xl shadow-md border border-red-200">
+              <p className="text-xl font-semibold mb-2">Restaurant not found.</p>
+              <p>The restaurant you are looking for might not exist or has been removed.</p>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="container mx-auto p-6 lg:p-10">
+          <Button onClick={() => navigate('home')} className="bg-gray-200 text-gray-800 hover:bg-gray-300 mb-8 py-2 px-5 text-base">
+            &larr; Back to Restaurants
+          </Button>
+          <div className="bg-white rounded-3xl shadow-xl p-8 mb-10 border border-gray-100">
+            <div className="relative">
+              <img src={restaurant.imageUrl} alt={restaurant.name} className="w-full h-80 object-cover rounded-2xl shadow-md mb-6" onError={(e) => e.target.src = 'https://placehold.co/800x400/FEE2E2/EF4444?text=Image+Unavailable'} />
+              <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black via-transparent to-transparent rounded-b-2xl">
+                <h2 className="text-5xl font-extrabold text-white mb-2 drop-shadow-lg">{restaurant.name}</h2>
+                <p className="text-gray-200 text-xl mb-4">{restaurant.cuisine} | Rating: <span className="text-yellow-400 font-bold">{restaurant.rating} <StarIcon /></span></p>
+              </div>
+            </div>
+          </div>
+
+          <h3 className="text-4xl font-extrabold text-gray-800 mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-teal-500 drop-shadow-md">
+            Delicious Menu
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {menu.map((item) => (
+              <MenuItemCard key={item.id} item={item} addToCart={addToCart} />
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    // Cart Page Component
+    const CartPage = ({ navigate }) => {
+      const { cart, removeFromCart, updateCartQuantity, placeOrder, user } = React.useContext(AppContext);
+      const [showOrderMessage, setShowOrderMessage] = React.useState(false);
+      const [orderMessage, setOrderMessage] = React.useState('');
+      const [loadingOrder, setLoadingOrder] = React.useState(false);
+
+      const calculateTotal = () => {
+        return cart.reduce((total, item) => total + item.price * item.quantity, 0);
+      };
+
+      const handlePlaceOrder = async () => {
+        if (!user) {
+          setOrderMessage('Please login to place your order.');
+          setShowOrderMessage(true);
+          setTimeout(() => navigate('auth'), 1500); // Redirect to login after a short message display
+          return;
+        }
+
+        if (cart.length === 0) {
+          setOrderMessage('Your cart is empty. Add items before placing an order.');
+          setShowOrderMessage(true);
+          return;
+        }
+
+        setLoadingOrder(true);
+        try {
+          const orderDetails = {
+            userId: user.id,
+            items: cart,
+            total: calculateTotal(),
+            timestamp: new Date().toISOString(),
+          };
+          const response = await mockApi.placeOrder(orderDetails);
+          if (response.success) {
+            setOrderMessage(response.message);
+            placeOrder(); // Clear cart in context
+          } else {
+            setOrderMessage('Failed to place order: ' + (response.message || 'Unknown error.'));
+          }
+        } catch (error) {
+          setOrderMessage('An error occurred while placing your order. Please try again.');
+          console.error('Order placement error:', error);
+        } finally {
+          setShowOrderMessage(true);
+          setLoadingOrder(false);
+          // Automatically hide message after 5 seconds
+          setTimeout(() => setShowOrderMessage(false), 5000);
+        }
+      };
+
+      return (
+        <div className="container mx-auto p-6 lg:p-10">
+          <h2 className="text-5xl font-extrabold text-gray-800 mb-10 text-center bg-clip-text text-transparent bg-gradient-to-r from-red-600 to-orange-400 drop-shadow-md">
+            Your Delicious Cart
+          </h2>
+
+          {showOrderMessage && (
+            <div className={`p-5 rounded-xl text-center mb-8 font-semibold text-lg shadow-md ${orderMessage.includes('successfully') ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-100 text-red-700 border border-red-200'}`}>
+              {orderMessage}
+            </div>
+          )}
+
+          {cart.length === 0 && !showOrderMessage ? (
+            <div className="text-center text-gray-600 text-xl p-12 bg-white rounded-xl shadow-lg border border-gray-100">
+              Your cart is feeling a bit empty! <br /> Let's fill it with some delicious food.
+              <Button onClick={() => navigate('home')} className="mt-6 bg-blue-500 hover:bg-blue-600 text-white py-2 px-5 text-base">
+                Start Shopping
+              </Button>
+            </div>
+          ) : (
+            <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
+              <div className="space-y-6">
+                {cart.map((item) => (
+                  <div key={item.id} className="flex flex-col sm:flex-row items-center justify-between border-b pb-6 last:border-b-0 last:pb-0 pt-2">
+                    <div className="flex-grow text-center sm:text-left mb-3 sm:mb-0">
+                      <h4 className="font-bold text-gray-800 text-xl">{item.name}</h4>
+                      <p className="text-gray-600 text-md">₹{item.price.toFixed(2)} each</p>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Button
+                        onClick={() => updateCartQuantity(item.id, item.quantity - 1)}
+                        className="bg-gray-200 text-gray-700 hover:bg-gray-300 px-4 py-2 text-base rounded-lg shadow-sm"
+                        disabled={item.quantity <= 1 || loadingOrder}
+                      >
+                        -
+                      </Button>
+                      <span className="font-extrabold text-2xl w-8 text-center text-gray-800">{item.quantity}</span>
+                      <Button
+                        onClick={() => updateCartQuantity(item.id, item.quantity + 1)}
+                        className="bg-gray-200 text-gray-700 hover:bg-gray-300 px-4 py-2 text-base rounded-lg shadow-sm"
+                        disabled={loadingOrder}
+                      >
+                        +
+                      </Button>
+                      <Button
+                        onClick={() => removeFromCart(item.id)}
+                        className="bg-red-500 text-white hover:bg-red-600 px-4 py-2 text-base rounded-lg shadow-sm"
+                        disabled={loadingOrder}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-10 pt-6 border-t-2 border-gray-200 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+                <h3 className="text-3xl font-extrabold text-gray-800">Total: ₹{calculateTotal().toFixed(2)}</h3>
+                <Button
+                  onClick={handlePlaceOrder}
+                  className="bg-green-600 hover:bg-green-700 text-white text-xl py-4 px-8 rounded-full"
+                  disabled={loadingOrder || cart.length === 0 || !user} // Disable if not logged in
+                >
+                  {loadingOrder ? 'Placing Order...' : 'Place Order Now'}
+                </Button>
+              </div>
+              {!user && cart.length > 0 && (
+                <p className="text-center text-sm text-red-500 mt-6 font-semibold">
+                  <span className="text-red-700">Heads up!</span> Please <button onClick={() => navigate('auth')} className="text-blue-600 underline hover:text-blue-800 transition-colors duration-200">Login</button> or <button onClick={() => navigate('auth')} className="text-blue-600 underline hover:text-blue-800 transition-colors duration-200">Sign Up</button> to complete your order.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    // Authentication Page Component
+    const AuthPage = ({ navigate }) => {
+      const { setUser } = React.useContext(AppContext);
+      const [isLogin, setIsLogin] = React.useState(true);
+      const [username, setUsername] = React.useState('');
+      const [password, setPassword] = React.useState('');
+      const [message, setMessage] = React.useState('');
+      const [loading, setLoading] = React.useState(false);
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        setMessage('');
+        setLoading(true);
+
+        try {
+          let response;
+          if (isLogin) {
+            response = await mockApi.login(username, password);
+          } else {
+            response = await mockApi.signup(username, password);
+          }
+
+          if (response.success) {
+            setUser(response.user);
+            setMessage({ type: 'success', text: `${isLogin ? 'Logged in' : 'Signed up'} successfully as ${response.user.name.split(' ')[0]}! Redirecting...` });
+            setTimeout(() => navigate('home'), 1500); // Redirect after success message
+          } else {
+            setMessage({ type: 'error', text: response.message });
+          }
+        } catch (err) {
+          setMessage({ type: 'error', text: `An unexpected error occurred during ${isLogin ? 'login' : 'signup'}.` });
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      return (
+        <div className="container mx-auto p-6 lg:p-10 flex justify-center items-center min-h-[calc(100vh-120px)]">
+          <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-lg border border-gray-100 transform hover:scale-[1.01] transition-transform duration-300">
+            <h2 className="text-4xl font-extrabold text-gray-800 mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600 drop-shadow-md">
+              {isLogin ? 'Welcome Back!' : 'Join Rasoi Rider!'}
+            </h2>
+            {message.text && (
+              <div className={`p-4 mb-6 rounded-lg text-center font-semibold text-lg shadow-md ${message.type === 'success' ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-100 text-red-700 border border-red-200'}`}>
+                {message.text}
+              </div>
+            )}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label htmlFor="username" className="block text-gray-700 font-semibold text-lg mb-2">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  id="username"
+                  className="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-red-200 transition duration-200 text-lg"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                  disabled={loading}
+                  placeholder="Enter your username"
+                />
+              </div>
+              <div>
+                <label htmlFor="password" className="block text-gray-700 font-semibold text-lg mb-2">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  className="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-red-200 transition duration-200 text-lg"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                  placeholder="Enter your password"
+                />
+              </div>
+              <Button
+                type="submit"
+                className="w-full py-4 text-xl"
+                disabled={loading}
+              >
+                {loading ? (isLogin ? 'Logging In...' : 'Signing Up...') : (isLogin ? 'Login Now' : 'Create Account')}
+              </Button>
+            </form>
+            <p className="mt-8 text-center text-gray-600 text-lg">
+              {isLogin ? "Don't have an account yet?" : "Already a member?"}{' '}
+              <button
+                onClick={() => {setIsLogin(!isLogin); setMessage(''); setUsername(''); setPassword('');}}
+                className="text-red-600 font-bold hover:underline transition-colors duration-200"
+                disabled={loading}
+              >
+                {isLogin ? 'Sign Up' : 'Login'}
+              </button>
+            </p>
+          </div>
+        </div>
+      );
+    };
+
+    // Main App Component
+    function App() {
+      const [currentPage, setCurrentPage] = React.useState('home');
+      const [currentRestaurantId, setCurrentRestaurantId] = React.useState(null);
+      const [cart, setCart] = React.useState([]);
+      const [user, setUser] = React.useState(null); // { id: 'user123', name: 'John Doe' } or null
+
+      // Function to navigate between pages
+      const navigate = (page, params = {}) => {
+        setCurrentPage(page);
+        if (page === 'restaurant' && params.restaurantId) {
+          setCurrentRestaurantId(params.restaurantId);
+        } else {
+          setCurrentRestaurantId(null);
+        }
+      };
+
+      // Add item to cart
+      const addToCart = (item) => {
+        setCart((prevCart) => {
+          const existingItem = prevCart.find((cartItem) => cartItem.id === item.id);
+          if (existingItem) {
+            return prevCart.map((cartItem) =>
+              cartItem.id === item.id ? { ...cartItem, quantity: cartItem.quantity + 1 } : cartItem
+            );
+          } else {
+            return [...prevCart, { ...item, quantity: 1 }];
+          }
+        });
+      };
+
+      // Remove item from cart
+      const removeFromCart = (itemId) => {
+        setCart((prevCart) => prevCart.filter((item) => item.id !== itemId));
+      };
+
+      // Update item quantity in cart
+      const updateCartQuantity = (itemId, newQuantity) => {
+        if (newQuantity <= 0) {
+          removeFromCart(itemId);
+        } else {
+          setCart((prevCart) =>
+            prevCart.map((item) =>
+              item.id === itemId ? { ...item, quantity: newQuantity } : item
+            )
+          );
+        }
+      };
+
+      // Clear cart after order placement
+      const clearCart = () => {
+        setCart([]);
+      };
+
+      // Provide state and functions via context
+      const appState = {
+        cart,
+        addToCart,
+        removeFromCart,
+        updateCartQuantity,
+        placeOrder: clearCart, // Renamed for clarity in CartPage context usage
+        user,
+        setUser,
+      };
+
+      return (
+        <div className="font-sans antialiased bg-gradient-to-br from-red-50 to-orange-50 min-h-screen text-gray-800" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <AppContext.Provider value={appState}>
+            <Navbar navigate={navigate} />
+            <main className="py-8 flex-grow">
+              {currentPage === 'home' && <HomePage navigate={navigate} />}
+              {currentPage === 'restaurant' && currentRestaurantId && (
+                <RestaurantDetailPage restaurantId={currentRestaurantId} navigate={navigate} />
+              )}
+              {currentPage === 'cart' && <CartPage navigate={navigate} />}
+              {currentPage === 'auth' && <AuthPage navigate={navigate} />}
+            </main>
+          </AppContext.Provider>
+        </div>
+      );
+    }
+
+    // Mount the React App to the root div
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+
+  </script>
+</body>
+</html>
